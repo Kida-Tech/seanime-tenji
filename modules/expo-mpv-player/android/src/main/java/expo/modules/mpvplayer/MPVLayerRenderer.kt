@@ -393,8 +393,9 @@ class MPVLayerRenderer(private val context: Context) : MPVLib.EventObserver, MPV
 
         // On Android TV, open http(s) sources through FFmpeg's protocol (lavf://). On the Shield, mpv's
         // libcurl stream could stall indefinitely after a couple of quick seeks; FFmpeg's reader honours
-        // network-timeout and reconnects.
-        val loadUrl = if (isTv && (url.startsWith("http://") || url.startsWith("https://"))) "lavf://$url" else url
+        // network-timeout and reconnects. Plain http:// only: FFmpeg's TLS (mbedtls) in this libmpv has
+        // no CA store on Android, so https:// through lavf:// fails certificate verification.
+        val loadUrl = if (isTv && url.startsWith("http://")) "lavf://$url" else url
         MPVLib.command(arrayOf("loadfile", loadUrl, "replace"))
     }
 
